@@ -25,9 +25,8 @@ export default function ChatWindow({ chat, onUpdate, onMenuOpen }) {
   };
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chat.messages]);
-
+  bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}, [chat.messages]);
   const sendMessage = async (text, file, enabledTools) => {
     let uploadedFile = null;
 
@@ -251,7 +250,7 @@ export default function ChatWindow({ chat, onUpdate, onMenuOpen }) {
       flex: 1,
       display: "flex",
       flexDirection: "column",
-      height: "100dvh",
+      height: "100svh", // instead of "100dvh"
       overflow: "hidden",
       background: "#212121",
       minWidth: 0,
