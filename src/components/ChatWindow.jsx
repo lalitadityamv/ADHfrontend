@@ -212,38 +212,51 @@ export default function ChatWindow({ chat, onUpdate, onMenuOpen }) {
   const isEmpty = chat.messages.length === 0;
 
   const exportPDF = () => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let y = 20;
-    doc.setFontSize(18);
-    doc.setTextColor(224, 92, 42);
-    doc.text("ADH — Chat Export", 20, y);
-    y += 8;
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let y = 20;
+
+  doc.setFontSize(18);
+  doc.setTextColor(224, 92, 42); // brand orange — good contrast on white, keep as is
+  doc.text("ADH — Chat Export", 20, y);
+  y += 8;
+
+  doc.setFontSize(10);
+  doc.setTextColor(120, 120, 120); // medium gray, readable but secondary
+  doc.text(`${chat.title} · ${new Date().toLocaleDateString()}`, 20, y);
+  y += 12;
+
+  doc.setDrawColor(210, 210, 210); // light gray divider, not near-invisible
+  doc.line(20, y, pageWidth - 20, y);
+  y += 10;
+
+  chat.messages.forEach((msg) => {
+    if (y > 270) { doc.addPage(); y = 20; }
+
     doc.setFontSize(10);
-    doc.setTextColor(150, 150, 150);
-    doc.text(`${chat.title} · ${new Date().toLocaleDateString()}`, 20, y);
-    y += 12;
-    doc.setDrawColor(50, 50, 50);
-    doc.line(20, y, pageWidth - 20, y);
-    y += 10;
-    chat.messages.forEach((msg) => {
+    doc.setTextColor(
+      msg.role === "user" ? 224 : 224,
+      msg.role === "user" ? 92 : 92,
+      msg.role === "user" ? 42 : 42
+    );
+    // keep role label in brand orange for both — or differentiate below
+    doc.setTextColor(...(msg.role === "user" ? [180, 80, 30] : [90, 90, 90]));
+    doc.text(msg.role === "user" ? "You" : "ADH", 20, y);
+    y += 6;
+
+    doc.setTextColor(30, 30, 30); // near-black body text — this was the main bug
+    doc.setFontSize(11);
+    const lines = doc.splitTextToSize(msg.content || "", pageWidth - 40);
+    lines.forEach(line => {
       if (y > 270) { doc.addPage(); y = 20; }
-      doc.setFontSize(10);
-      doc.setTextColor(msg.role === "user" ? 200 : 150, msg.role === "user" ? 100 : 150, msg.role === "user" ? 42 : 150);
-      doc.text(msg.role === "user" ? "You" : "ADH", 20, y);
-      y += 6;
-      doc.setTextColor(220, 220, 220);
-      doc.setFontSize(11);
-      const lines = doc.splitTextToSize(msg.content || "", pageWidth - 40);
-      lines.forEach(line => {
-        if (y > 270) { doc.addPage(); y = 20; }
-        doc.text(line, 20, y);
-        y += 6;
-      });
+      doc.text(line, 20, y);
       y += 6;
     });
-    doc.save(`ADH-${chat.title.slice(0, 30)}.pdf`);
-  };
+    y += 6;
+  });
+
+  doc.save(`ADH-${chat.title.slice(0, 30)}.pdf`);
+};
 
   return (
     <main style={{
