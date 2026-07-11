@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Sidebar from "./components/Sidebar";
 import ChatWindow from "./components/ChatWindow";
 
@@ -17,13 +17,23 @@ export default function App() {
   });
   const [activeChatId, setActiveChatId] = useState(chats[0].id);
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+  const wasDesktop = useRef(window.innerWidth > 768);
 
   useEffect(() => {
     localStorage.setItem("adh_chats", JSON.stringify(chats));
   }, [chats]);
 
   useEffect(() => {
-    const handleResize = () => setSidebarOpen(window.innerWidth > 768);
+    const handleResize = () => {
+      const isDesktop = window.innerWidth > 768;
+      // Only react when we actually cross the mobile/desktop breakpoint.
+      // Prevents mobile keyboard open/close (which fires resize on height
+      // change only) from force-closing the sidebar mid-edit.
+      if (isDesktop !== wasDesktop.current) {
+        wasDesktop.current = isDesktop;
+        setSidebarOpen(isDesktop);
+      }
+    };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -40,9 +50,11 @@ export default function App() {
   const updateChat = (id, updater) => {
     setChats((prev) => prev.map((c) => (c.id === id ? updater(c) : c)));
   };
+
   const renameChat = (id, title) => {
-  setChats(prev => prev.map(c => c.id === id ? { ...c, title } : c));
-};
+    setChats((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
+  };
+
   const deleteChat = (id) => {
     setChats((prev) => {
       const remaining = prev.filter((c) => c.id !== id);
@@ -67,7 +79,7 @@ export default function App() {
         }}
         onNew={createNewChat}
         onDelete={deleteChat}
-onRename={renameChat}
+        onRename={renameChat}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
