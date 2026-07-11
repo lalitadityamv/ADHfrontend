@@ -7,8 +7,10 @@ function ChatItem({ chat, isActive, isMobile, isHovered, isEditing, onHover, onS
     setTitle(chat.title);
   }, [chat.title]);
 
-  const handleRename = () => {
-    if (title.trim()) onRename(chat.id, title.trim());
+  const commitRename = () => {
+    if (title.trim() && title.trim() !== chat.title) {
+      onRename(chat.id, title.trim());
+    }
   };
 
   const showActions = isMobile || isHovered;
@@ -30,8 +32,16 @@ function ChatItem({ chat, isActive, isMobile, isHovered, isEditing, onHover, onS
           autoFocus
           value={title}
           onChange={e => setTitle(e.target.value)}
-          onBlur={handleRename}
-          onKeyDown={e => e.key === "Enter" && handleRename()}
+          onKeyDown={e => {
+            if (e.key === "Enter") {
+              commitRename();
+              onStartEdit(null);
+            }
+            if (e.key === "Escape") {
+              setTitle(chat.title);
+              onStartEdit(null);
+            }
+          }}
           onClick={e => e.stopPropagation()}
           style={{
             flex: 1, background: "#3a3a3a", border: "none", outline: "none",
@@ -90,11 +100,6 @@ export default function Sidebar({ chats, activeChatId, onSelect, onNew, onDelete
 
   const { today, yesterday, older } = groupChats();
 
-  const handleRenameCommit = (id, newTitle) => {
-    onRename(id, newTitle);
-    setEditingId(null);
-  };
-
   const Section = ({ label, items }) => items.length === 0 ? null : (
     <div style={{ marginBottom: 16 }}>
       <p style={{ fontSize: 11, color: "#555", padding: "6px 10px 4px", fontWeight: 500 }}>{label}</p>
@@ -109,7 +114,7 @@ export default function Sidebar({ chats, activeChatId, onSelect, onNew, onDelete
           onHover={setHoveredId}
           onSelect={onSelect}
           onStartEdit={setEditingId}
-          onRename={handleRenameCommit}
+          onRename={onRename}
           onDelete={onDelete}
         />
       ))}
