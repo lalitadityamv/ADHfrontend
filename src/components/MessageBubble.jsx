@@ -30,10 +30,13 @@ function CopyCodeButton({ code }) {
   );
 }
 
-export default function MessageBubble({ message, isLast, loading }) {
+export default function MessageBubble({ message, isLast, loading, isMobile }) {
   const isUser = message.role === "user";
   const [thinkingOpen, setThinkingOpen] = useState(true);
   const [copied, setCopied] = useState(false);
+
+  // indent for assistant content — less on mobile so image has full width
+  const indent = isMobile ? 36 : 38;
 
   const copyText = () => {
     navigator.clipboard.writeText(message.content);
@@ -56,7 +59,7 @@ export default function MessageBubble({ message, isLast, loading }) {
       {/* User message */}
       {isUser && (
         <div style={{
-          maxWidth: "70%", padding: "12px 16px",
+          maxWidth: isMobile ? "88%" : "70%", padding: "12px 16px",
           borderRadius: "18px 18px 4px 18px",
           background: "#2f2f2f", color: "#ececec",
           fontSize: 15, lineHeight: 1.7,
@@ -73,13 +76,13 @@ export default function MessageBubble({ message, isLast, loading }) {
       {!isUser && (
         <div style={{ width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#e05c2a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>A</div>
+            <img src="/ADH_favicon.png" alt="ADH" style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0 }} />
             <span style={{ fontSize: 14, fontWeight: 500, color: "#ececec" }}>ADH</span>
           </div>
 
           {/* Thinking block */}
           {message.thinking?.length > 0 && (
-            <div style={{ marginBottom: 14, marginLeft: 38, border: "1px solid #2a2a2a", borderRadius: 10, overflow: "hidden", background: "#1a1a1a" }}>
+            <div style={{ marginBottom: 14, marginLeft: indent, border: "1px solid #2a2a2a", borderRadius: 10, overflow: "hidden", background: "#1a1a1a" }}>
               <button onClick={() => setThinkingOpen(o => !o)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", background: "none", border: "none", cursor: "pointer", color: "#666", fontSize: 13, textAlign: "left" }}>
                 {isLast && loading ? (
                   <svg width="14" height="14" viewBox="0 0 14 14" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }}>
@@ -114,13 +117,20 @@ export default function MessageBubble({ message, isLast, loading }) {
             </div>
           )}
 
-          {/* Generated image with download button */}
+          {/* Generated image — full width on mobile */}
           {message.imageUrl && (
-            <div style={{ marginLeft: 38, marginBottom: 12, position: "relative", display: "inline-block", maxWidth: "calc(100% - 38px)" }}>
+            <div style={{
+              marginLeft: isMobile ? 0 : indent,
+              marginBottom: 12,
+              position: "relative",
+              display: "block",
+              width: isMobile ? "100%" : `calc(100% - ${indent}px)`,
+            }}>
               <img
                 src={message.imageUrl}
                 alt="Generated"
-                style={{ maxWidth: "100%", borderRadius: 10, display: "block" }}
+                style={{ width: "100%", borderRadius: 10, display: "block" }}
+                onError={(e) => { e.target.style.display = "none"; }}
               />
               <button
                 onClick={() => downloadImage(message.imageUrl)}
@@ -144,8 +154,8 @@ export default function MessageBubble({ message, isLast, loading }) {
             </div>
           )}
 
-          {/* Response text with code copy buttons */}
-          <div style={{ marginLeft: 38, fontSize: 15, lineHeight: 1.8, color: "#ececec", wordBreak: "break-word" }}>
+          {/* Response text */}
+          <div style={{ marginLeft: indent, fontSize: 15, lineHeight: 1.8, color: "#ececec", wordBreak: "break-word" }}>
             <ReactMarkdown
               components={{
                 code({ node, inline, className, children, ...props }) {
@@ -180,7 +190,7 @@ export default function MessageBubble({ message, isLast, loading }) {
           {(!isLast || !loading) && message.content && (
             <button
               onClick={copyText}
-              style={{ marginLeft: 38, marginTop: 8, background: "none", border: "none", color: copied ? "#2ecc71" : "#444", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 4, padding: "4px 0", transition: "color 0.15s" }}
+              style={{ marginLeft: indent, marginTop: 8, background: "none", border: "none", color: copied ? "#2ecc71" : "#444", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 4, padding: "4px 0", transition: "color 0.15s" }}
               onMouseEnter={e => { if (!copied) e.currentTarget.style.color = "#aaa"; }}
               onMouseLeave={e => { if (!copied) e.currentTarget.style.color = "#444"; }}
             >

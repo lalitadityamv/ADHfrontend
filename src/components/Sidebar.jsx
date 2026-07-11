@@ -101,12 +101,7 @@ export default function Sidebar({ chats, activeChatId, onSelect, onNew, onDelete
         {/* Header */}
         <div style={{ padding: "12px 10px 8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 6, background: "#e30f0f",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13, fontWeight: 700, color: "#fff",
-            }}>A</div>
-            <span style={{ fontWeight: 600, fontSize: 15, color: "#ececec" }}>ADH</span>
+            <img src="/ADH_favicon.png" alt="ADH" style={{ width: 70, height: 70, borderRadius: 8 }} />
           </div>
           {window.innerWidth <= 768 && (
             <button onClick={onClose} style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 18 }}>✕</button>
